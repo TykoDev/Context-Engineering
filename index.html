@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Context Engineering</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed as a thematic, non-linear dashboard. It starts with a high-level "What & Why" section featuring an interactive diagram comparing Prompt vs. Context Engineering. The core of the app is an interactive "Core Components" explorer, allowing users to drill down into each part of the context payload (knowledge, tools, etc.). A "Big Picture" section uses a chart and tabs to explain key techniques like RAG and Memory Systems. Finally, a "Context Architect" section provides a downloadable set of LLM instructions for applying these principles. This structure was chosen to guide the user from high-level concepts to detailed techniques and a practical, actionable takeaway. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Prompt vs. Context Engineering definition -> Goal: Compare -> Viz: Interactive HTML/CSS diagram -> Interaction: Hover to reveal details -> Justification: Clearly visualizes the fundamental paradigm shift. -> Method: HTML/CSS/JS.
+        - Report Info: Components of context (knowledge, tools, memory, etc.) -> Goal: Inform/Organize -> Viz: Clickable node garden diagram -> Interaction: Click a node to display detailed info in a side panel -> Justification: Breaks down the complex formal definition into a user-driven, explorable interface. -> Method: HTML/CSS/JS.
+        - Report Info: The shift in information sources for LLMs -> Goal: Compare/Inform -> Viz: Stacked Bar Chart -> Interaction: Hover tooltips explain data segments -> Justification: Provides a compelling, quasi-quantitative look at how Context Engineering changes AI information diet. -> Library: Chart.js.
+        - Report Info: Context Architect Persona -> Goal: Organize/Provide Tool -> Viz: Formatted text block with download button -> Interaction: Click to download .md file -> Justification: Provides a practical, reusable artifact for users to apply the report's concepts. -> Method: HTML/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfdfc;
+            color: #1a1a1a;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover {
+            color: #d97706;
+            border-bottom-color: #d97706;
+        }
+        .active-nav {
+            color: #d97706;
+            border-bottom-color: #d97706;
+            font-weight: 600;
+        }
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .component-node {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .component-node.active, .component-node:hover {
+            background-color: #d97706;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+        .tab-button {
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background-color: #d97706;
+            color: #fff;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .hidden {
+            display: none;
+        }
+        .download-btn {
+            background-color: #f59e0b;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #d97706;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800">Context Engineering</h1>
+                <div class="hidden sm:flex sm:space-x-8">
+                    <a href="#what-why" class="nav-link border-b-2 border-transparent pb-1">What & Why</a>
+                    <a href="#components" class="nav-link border-b-2 border-transparent pb-1">Core Components</a>
+                    <a href="#big-picture" class="nav-link border-b-2 border-transparent pb-1">The Big Picture</a>
+                    <a href="#context-architect" class="nav-link border-b-2 border-transparent pb-1">Context Architect</a>
+                </div>
+                <div class="sm:hidden">
+                    <select id="mobile-nav" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                        <option value="#what-why">What & Why</option>
+                        <option value="#components">Core Components</option>
+                        <option value="#big-picture">The Big Picture</option>
+                        <option value="#context-architect">Context Architect</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <!-- What & Why Section -->
+        <section id="what-why" class="mb-16 scroll-mt-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-amber-700">From Prompting to Architecture</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Context Engineering is the paradigm shift from writing simple text prompts to designing dynamic, information-rich environments for AI models. This approach solves "context failures"—the new bottleneck in creating reliable, production-grade AI systems.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-bold text-center mb-4">Traditional Prompt Engineering</h3>
+                    <div class="text-center text-gray-500 mb-4">A static, linear instruction.</div>
+                    <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-center h-48">
+                        <div class="text-center">
+                            <span class="text-5xl">💬</span>
+                            <p class="font-mono bg-gray-200 p-2 rounded mt-2">`prompt`</p>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-gray-600">This approach treats the input as a single string. It's tactical and effective for simple tasks, but brittle for complex, data-intensive applications where the AI lacks necessary background information.</p>
+                </div>
+
+                <div class="card p-6 rounded-lg border-2 border-amber-500">
+                    <h3 class="text-2xl font-bold text-center mb-4">Context Engineering</h3>
+                    <div class="text-center text-gray-500 mb-4">A dynamic, structured information payload.</div>
+                    <div class="bg-amber-50 p-4 rounded-lg flex items-center justify-center h-48">
+                         <div class="text-center relative">
+                            <div class="font-mono bg-amber-200 p-2 rounded text-amber-800">Assemble(...)</div>
+                            <div class="grid grid-cols-3 gap-2 mt-4 text-xs">
+                                <span class="bg-white p-1 rounded shadow-sm">knowledge</span>
+                                <span class="bg-white p-1 rounded shadow-sm">tools</span>
+                                <span class="bg-white p-1 rounded shadow-sm">memory</span>
+                                <span class="bg-white p-1 rounded shadow-sm">state</span>
+                                <span class="bg-white p-1 rounded shadow-sm">rules</span>
+                                <span class="bg-white p-1 rounded shadow-sm">query</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-gray-600">This approach assembles a complete payload at inference time, giving the AI the specific instructions, data, tools, and memory it needs to perform complex tasks reliably and accurately. It's strategic system design.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Components Section -->
+        <section id="components" class="mb-16 scroll-mt-24">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-amber-700">Anatomy of a Context Payload</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">A well-architected context is composed of several key components that work together to guide the AI. Click on each component below to explore its role and see an example of how it's used.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 flex flex-col items-center justify-center">
+                    <div class="relative w-full max-w-xs aspect-square">
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 text-white rounded-full w-24 h-24 flex items-center justify-center font-bold text-lg">LLM</div>
+                        <div id="node-instructions" data-component="instructions" class="component-node absolute top-0 left-1/2 -translate-x-1/2 -mt-4 bg-gray-200 p-2 rounded-lg shadow">📜 Instructions</div>
+                        <div id="node-knowledge" data-component="knowledge" class="component-node absolute top-1/4 right-0 translate-x-1/2 bg-gray-200 p-2 rounded-lg shadow">📚 Knowledge</div>
+                        <div id="node-tools" data-component="tools" class="component-node absolute top-3/4 right-0 translate-x-1/2 bg-gray-200 p-2 rounded-lg shadow">🛠️ Tools</div>
+                        <div id="node-memory" data-component="memory" class="component-node absolute bottom-0 left-1/2 -translate-x-1/2 mb-2 bg-gray-200 p-2 rounded-lg shadow">🧠 Memory</div>
+                        <div id="node-state" data-component="state" class="component-node absolute top-3/4 left-0 -translate-x-1/2 bg-gray-200 p-2 rounded-lg shadow">🌐 State</div>
+                        <div id="node-query" data-component="query" class="component-node absolute top-1/4 left-0 -translate-x-1/2 bg-gray-200 p-2 rounded-lg shadow">❓ Query</div>
+                    </div>
+                </div>
+                <div id="component-display" class="lg:col-span-2 card p-6 rounded-lg min-h-[300px] bg-white flex flex-col justify-center">
+                </div>
+            </div>
+        </section>
+
+        <!-- The Big Picture Section -->
+        <section id="big-picture" class="mb-16 scroll-mt-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-amber-700">The Big Picture: Key Architectures</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Context Engineering relies on several powerful architectures to gather and structure information. The chart below illustrates the shift in information sources, and the tabs explore specific techniques.</p>
+            </div>
+            
+            <div class="card p-6 rounded-lg mb-12">
+                <h3 class="text-xl font-bold text-center mb-4">AI Information Sources: Then vs. Now</h3>
+                <div class="chart-container">
+                    <canvas id="infoSourcesChart"></canvas>
+                </div>
+                 <p class="text-center mt-4 text-gray-600">This chart shows how Context-Engineered AI dramatically reduces reliance on static internal knowledge, instead drawing from a dynamic mix of retrieved data, tool outputs, and memory to ground its reasoning.</p>
+            </div>
+
+            <div class="card p-6 rounded-lg">
+                <div class="mb-6 border-b border-gray-200">
+                     <nav class="flex space-x-2 sm:space-x-4" aria-label="Tabs">
+                        <button id="tab-rag" data-tab="rag" class="tab-button active px-3 py-2 font-medium text-sm rounded-md">Retrieval-Augmented Generation (RAG)</button>
+                        <button id="tab-memory" data-tab="memory" class="tab-button px-3 py-2 font-medium text-sm rounded-md">Memory Systems</button>
+                        <button id="tab-agents" data-tab="agents" class="tab-button px-3 py-2 font-medium text-sm rounded-md">Agentic Systems</button>
+                    </nav>
+                </div>
+                <div id="tab-content-rag" class="tab-content">
+                    <h4 class="text-xl font-bold mb-2">Retrieval-Augmented Generation (RAG)</h4>
+                    <p class="text-gray-600">RAG is the cornerstone of providing external knowledge. Instead of just relying on its training data, the system retrieves relevant, up-to-date information from external sources (like documents, databases, or websites) and adds it to the context. This combats hallucinations and allows the AI to answer questions about specific, private, or recent information.</p>
+                    <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                       <p class="font-mono text-sm">**User Query:** "What were our Q3 sales figures for the Alpha project?"</p>
+                       <p class="font-mono text-sm mt-2">**System Action:** `Retrieve('Q3 sales figures for Alpha project')` ➔ Fetches report snippet.</p>
+                       <p class="font-mono text-sm mt-2">**Context Payload:** `[Knowledge]: "Q3 sales for Alpha were $1.2M..."`</p>
+                    </div>
+                </div>
+                 <div id="tab-content-memory" class="tab-content hidden">
+                    <h4 class="text-xl font-bold mb-2">Memory Systems</h4>
+                    <p class="text-gray-600">Memory gives AI systems persistence and personalization across conversations. This can range from a simple history of recent messages to a sophisticated, structured database of user preferences, key entities, and past conclusions. This allows the AI to remember what was discussed previously, avoiding repetition and enabling more natural, stateful interactions.</p>
+                     <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                       <p class="font-mono text-sm">**User (in previous turn):** "My budget for the trip is $2000."</p>
+                       <p class="font-mono text-sm mt-2">**System Action:** `SaveToMemory(user_id, 'budget', 2000)`.</p>
+                       <p class="font-mono text-sm mt-2">**User (in current turn):** "Show me hotel options."</p>
+                        <p class="font-mono text-sm mt-2">**Context Payload:** `[Memory]: "User budget: $2000"` ➔ AI filters hotels accordingly.</p>
+                    </div>
+                </div>
+                 <div id="tab-content-agents" class="tab-content hidden">
+                    <h4 class="text-xl font-bold mb-2">Agentic Systems & Tool Use</h4>
+                    <p class="text-gray-600">Agentic systems give AI the ability to *act*. By providing the AI with a set of "tools" (APIs or functions), it can interact with the outside world. The AI can reason about which tool to use, call it with the right parameters, and then use the result to inform its final answer. This transforms the LLM from a text generator into a problem-solver that can book appointments, search the web, or query databases.</p>
+                      <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                       <p class="font-mono text-sm">**User Query:** "What's the current stock price of ACME Corp?"</p>
+                       <p class="font-mono text-sm mt-2">**Context Payload:** `[Tools]: "get_stock_price(ticker)"`</p>
+                       <p class="font-mono text-sm mt-2">**System Action:** AI decides to call `get_stock_price('ACME')` ➔ Returns `$123.45`.</p>
+                       <p class="font-mono text-sm mt-2">**Final Answer:** "The current stock price of ACME Corp is $123.45."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Context Architect Section -->
+        <section id="context-architect" class="scroll-mt-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-amber-700">The Context Architect Persona</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">To effectively apply these principles, you can instruct an LLM to act as a "Context Architect." These instructions guide the AI to deconstruct user requests and build a complete, structured context payload, dramatically improving the quality and reliability of its responses.</p>
+            </div>
+
+            <div class="card p-6 rounded-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">LLM Instructions: The Context Architect</h3>
+                    <button id="download-md-btn" class="download-btn font-bold py-2 px-4 rounded-lg inline-flex items-center">
+                        <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/></svg>
+                        <span>Download .md</span>
+                    </button>
+                </div>
+                <div class="bg-gray-800 text-white p-4 rounded-lg max-h-[500px] overflow-y-auto">
+                    <pre><code id="persona-content" class="text-sm whitespace-pre-wrap"></code></pre>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="bg-gray-100 border-t border-gray-200 mt-16">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-600">
+            <p>This interactive guide is based on the phenomenal work compiled in the <a href="https://github.com/Meirtz/Awesome-Context-Engineering/" target="_blank" rel="noopener noreferrer" class="text-amber-700 hover:text-amber-600 underline">Awesome-Context-Engineering</a> repository.</p>
+            <p class="mt-1">A huge thanks to all the authors and contributors for their invaluable research.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Component Explorer Logic
+            const componentData = {
+                'instructions': { title: '📜 System Instructions', content: "This component sets the AI's persona, rules, and objectives. It's the high-level directive that governs all other actions. Think of it as the AI's 'job description' for the current task.", example: "You are a helpful and friendly customer support assistant for ACME Electronics. Always be polite. Never promise discounts." },
+                'knowledge': { title: '📚 Retrieved Knowledge', content: "This is dynamically fetched information from external sources (documents, databases) to ground the AI's response in fact. It is the core of Retrieval-Augmented Generation (RAG) and crucial for accuracy.", example: "[From Manual_v3.pdf]: 'To reset the XJ-500, hold the power button for 10 seconds while the device is off.'" },
+                'tools': { title: '🛠️ Available Tools', content: "These are definitions of functions or APIs the AI can use to interact with the outside world. This allows the AI to perform actions like searching the web, querying a database, or sending an email.", example: "function: `get_weather(city: string)` - Returns the current weather for a given city." },
+                'memory': { title: '🧠 Conversation Memory', content: "This provides statefulness by storing information from previous turns in the conversation. It can include user preferences, past questions, or summaries of key facts, enabling more coherent and personalized dialogue.", example: "User mentioned their budget is '$150' in the last turn. User's name is Jane." },
+                'state': { title: '🌐 World/User State', content: "This component captures the current real-time state of the application or the user, which might not be part of the direct conversation history. It provides situational awareness.", example: "User's current location: Paris. Items in shopping cart: 3. Current time: 3:00 PM." },
+                'query': { title: '❓ User Query', content: "This is the user's immediate, explicit request. All other components are assembled to help the AI address this specific query as effectively as possible.", example: "'Can you find me a flight to New York for next Tuesday?'" }
+            };
+
+            const componentDisplay = document.getElementById('component-display');
+            const nodes = document.querySelectorAll('.component-node');
+
+            function updateComponentDisplay(componentKey) {
+                const data = componentData[componentKey];
+                if (!data) return;
+                componentDisplay.innerHTML = `
+                    <h3 class="text-2xl font-bold mb-4">${data.title}</h3>
+                    <p class="text-gray-700 mb-4">${data.content}</p>
+                    <div class="p-4 bg-amber-50 rounded-lg">
+                        <p class="text-sm font-semibold text-amber-800">Example:</p>
+                        <p class="font-mono text-sm text-gray-800 mt-1">${data.example}</p>
+                    </div>
+                `;
+                nodes.forEach(node => {
+                    node.classList.toggle('active', node.dataset.component === componentKey);
+                });
+            }
+
+            nodes.forEach(node => {
+                node.addEventListener('click', () => {
+                    updateComponentDisplay(node.dataset.component);
+                });
+            });
+            updateComponentDisplay('instructions');
+
+            // Info Sources Chart Logic
+            const ctx = document.getElementById('infoSourcesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Traditional LLM', 'Context-Engineered LLM'],
+                    datasets: [
+                        { label: 'Internal Knowledge', data: [90, 20], backgroundColor: '#fbbf24', },
+                        { label: 'Retrieved Knowledge (RAG)', data: [5, 40], backgroundColor: '#f97316', },
+                        { label: 'Tool-Based Data', data: [3, 25], backgroundColor: '#ea580c', },
+                        { label: 'Memory / State', data: [2, 15], backgroundColor: '#c2410c', }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: { stacked: true, display: false },
+                        y: { stacked: true, grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.x !== null) {
+                                        label += context.parsed.x + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Tabs Logic
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const tabId = button.dataset.tab;
+                    tabContents.forEach(content => {
+                        content.classList.toggle('hidden', content.id !== `tab-content-${tabId}`);
+                    });
+                });
+            });
+
+            // Context Architect Persona Content and Download
+            const personaText = `Persona: The Context Architect
+
+# Core Directive
+Your primary function is to act as a "Context Architect." You do not simply write prompts; you architect the complete informational payload required for an LLM to perform a task with maximum accuracy, reliability, and intelligence. Your methodology is rooted in the principles of Context Engineering.
+
+# Guiding Principles
+
+## Deconstruct the Request
+When given a task, your first step is to break it down into the fundamental components of a context payload:
+### Objective & Query
+What is the user's explicit request and underlying intent?
+### Required Knowledge
+What external information, data, or documents are necessary to answer this query accurately? Is this information static or does it need to be retrieved in real-time?
+### Necessary Tools
+What actions or external data lookups are required? Define the necessary functions/APIs (e.g., \`search_web\`, \`query_database\`, \`send_email\`).
+### State & Memory
+What information needs to be remembered across turns? What is the current state of the user or system that influences the response? (e.g., user preferences, previous conversation steps, items in a shopping cart).
+### Core Instructions & Persona
+What role should the final LLM adopt? What are the non-negotiable rules and output formats?
+
+## Think Step-by-Step (Chain of Thought)
+Before generating the final prompt/context, you must externalize your reasoning. Articulate how you are constructing the context. Explain *why* each component is necessary.
+
+## Assemble the Context Payload
+Construct the final prompt as a structured context block. Use clear headings (e.g., \`[INSTRUCTIONS]\`, \`[RETRIEVED KNOWLEDGE]\`, \`[AVAILABLE TOOLS]\`, \`[CONVERSATION HISTORY]\`, \`[USER QUERY]\`) to delineate the different parts of the context. This isn't just for clarity; it helps the target LLM better parse the structured information.
+
+## Prioritize Grounding over Memorization
+Always assume the target LLM knows nothing specific. Your primary goal is to provide all the necessary information for the task within the context window. Explicitly state where knowledge comes from (e.g., "Based on the provided \`[DOCUMENT_CHUNK_3]\`...").
+
+## Generate Actionable Plans
+For complex tasks, the output should not be a direct answer but a plan of action for the target LLM. This plan often involves reasoning about which tools to use in what order.
+
+# Example Interaction
+
+## User Request
+"Help me write an email to my team about the new Q3 project timeline. The project is called 'Phoenix', the deadline has moved from Aug 15th to Sep 1st, and the key reason is a delay in component delivery from our supplier, 'Global Tech'."
+
+## Your Internal Monologue (Chain of Thought)
+### Objective
+Draft a professional team email about a project delay.
+### Query
+The user's request.
+### Knowledge
+The core facts are provided: Project 'Phoenix', old deadline Aug 15th, new deadline Sep 1st, reason is supplier 'Global Tech' delay. No external knowledge retrieval is needed for this simple case.
+### Tools
+No external tools are needed. The task is text generation.
+### Memory/State
+This is a one-shot request, so no long-term memory is needed.
+### Instructions
+The target LLM should adopt a professional, clear, and reassuring tone. It should structure the output as an email with a subject line, body, and closing.
+
+# Your Final Output (The Architected Context Prompt)
+You are an expert project manager communicating a critical update to your team. Your tone should be professional, transparent, and reassuring.
+
+[TASK]
+Draft an email to your project team informing them of a necessary change to the project deadline.
+
+[CONTEXTUAL KNOWLEDGE]
+- Project Name: Phoenix
+- Original Deadline: August 15th
+- New Deadline: September 1st
+- Reason for Delay: Unexpected delays in component delivery from our primary supplier, Global Tech.
+
+[RESPONSE INSTRUCTIONS]
+1. Generate a clear and concise subject line.
+2. In the body of the email:
+   - State the purpose of the email directly.
+   - Clearly announce the new deadline.
+   - Briefly and professionally explain the reason for the change, mentioning the supplier delay without placing blame.
+   - Reassure the team and outline the immediate next steps (e.g., "I will be sending out revised sprint plans shortly.").
+3. Format the entire output as a complete email draft.
+
+[USER QUERY]
+"Write an email to my team about the new Q3 project timeline. The project is called 'Phoenix', the deadline has moved from Aug 15th to Sep 1st, and the key reason is a delay in component delivery from our supplier, 'Global Tech'."`;
+
+            document.getElementById('persona-content').textContent = personaText;
+
+            document.getElementById('download-md-btn').addEventListener('click', () => {
+                const blob = new Blob([personaText], { type: 'text/markdown;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'context_architect_persona.md';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            // Smooth scrolling for nav links and mobile nav
+            function smoothScroll(target) {
+                document.querySelector(target).scrollIntoView({ behavior: 'smooth' });
+            }
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    smoothScroll(this.getAttribute('href'));
+                });
+            });
+
+            document.getElementById('mobile-nav').addEventListener('change', function(e) {
+                smoothScroll(e.target.value);
+            });
+            
+            // Active nav link on scroll
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.3
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active-nav', link.getAttribute('href') === `#${id}`);
+                        });
+                        document.getElementById('mobile-nav').value = `#${id}`;
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
