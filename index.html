@@ -405,29 +405,7 @@ This is a one-shot request, so no long-term memory is needed.
 ### Instructions
 The target LLM should adopt a professional, clear, and reassuring tone. It should structure the output as an email with a subject line, body, and closing.
 
-# Your Final Output (The Architected Context Prompt)
-You are an expert project manager communicating a critical update to your team. Your tone should be professional, transparent, and reassuring.
-
-[TASK]
-Draft an email to your project team informing them of a necessary change to the project deadline.
-
-[CONTEXTUAL KNOWLEDGE]
-- Project Name: Phoenix
-- Original Deadline: August 15th
-- New Deadline: September 1st
-- Reason for Delay: Unexpected delays in component delivery from our primary supplier, Global Tech.
-
-[RESPONSE INSTRUCTIONS]
-1. Generate a clear and concise subject line.
-2. In the body of the email:
-   - State the purpose of the email directly.
-   - Clearly announce the new deadline.
-   - Briefly and professionally explain the reason for the change, mentioning the supplier delay without placing blame.
-   - Reassure the team and outline the immediate next steps (e.g., "I will be sending out revised sprint plans shortly.").
-3. Format the entire output as a complete email draft.
-
-[USER QUERY]
-"Write an email to my team about the new Q3 project timeline. The project is called 'Phoenix', the deadline has moved from Aug 15th to Sep 1st, and the key reason is a delay in component delivery from our supplier, 'Global Tech'."`;
+# Your Final Output (The Architected Context Prompt)`;
 
             document.getElementById('persona-content').textContent = personaText;
 
